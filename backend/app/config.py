@@ -3,13 +3,19 @@ from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import router
+from starlette.middleware.sessions import SessionMiddleware
+
+# 设置token过期时间
+ACCESS_TOKEN_EXPIRE_MINUTES = 5  # 720
+# 设置Redis过期时间(s)
+REDIS_EXPIRE_TIME = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+SESSION_COOKIE_AGE = 300
 
 
 def create_app():
     app = FastAPI()
 
     app.include_router(router)
-
     # 添加中间件
     app.add_middleware(
         CORSMiddleware,
@@ -18,6 +24,7 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    # app.add_middleware(SessionMiddleware, secret_key='Jarvis', max_age=SESSION_COOKIE_AGE)
 
     # app.mount('/static', StaticFiles(directory='static'), name='static')
     # app.mount('/components', StaticFiles(directory='components'), name='components')
@@ -26,31 +33,3 @@ def create_app():
     app.mount('/logs', StaticFiles(directory='logs'), name='logs')
 
     return app
-
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-# USERS = {
-#     "john snow": {
-#         "username": "john snow",
-#         "full_name": "John Snow",
-#         "email": "johnsnow@example.com",
-#         "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-#         "disabled": False,
-#     }
-# }
-# fake_users_db = {
-#     "john snow": {
-#         "username": "john snow",
-#         "full_name": "John Snow",
-#         "email": "johnsnow@example.com",
-#         "hashed_password": "fakehashedsecret",
-#         "disabled": False,
-#     },
-#     "alice": {
-#         "username": "alice",
-#         "full_name": "Alice Wonderson",
-#         "email": "alice@example.com",
-#         "hashed_password": "fakehashedsecret2",
-#         "disabled": True,
-#     },
-# }

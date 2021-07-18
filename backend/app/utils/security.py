@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, constr
 from passlib.context import CryptContext
+from db.set_db import create_session
 import jwt
 from fastapi import Header
 import time
@@ -24,10 +25,6 @@ class UserInfo(BaseModel):
     password: constr(min_length=6)
 
 
-class UserInDB(UserInfo):
-    hashed_password: str
-
-
 class Token(BaseModel):
     token: str
     token_type: str
@@ -44,19 +41,35 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
+# 生成加密密码
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
 # 查询用户返回用户密码(加密过的)
 def jwt_get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+    session = create_session()
+    user_query = session.query(db).filter_by(username=username).first()
+    session.close()
+    user_dict = {}
+    if user_query:
+        user_dict['username'] = user_query.username
+        user_dict['password'] = user_query.password
+        user_dict['roles'] = [user_query.roles]
+        user_dict['introduction'] = user_query.introduction
+        user_dict['avator'] = user_query.avator
+        user_dict['name'] = user_query.name
+        user_dict['user_join_time'] = user_query.user_join_time
+        return user_dict
 
 
 # 验证用户
 def jwt_authenticate_user(db, username: str, password: str):
     user = jwt_get_user(db=db, username=username)
+    print(user)
     if not user:
         return False
-    if not verify_password(plain_password=password, hashed_password=user.hashed_password):
+    if not verify_password(plain_password=password, hashed_password=user['password']):
         return False
     return user
 
@@ -103,4 +116,4 @@ async def token_is_true(server_id: str = Header(..., ), nonce: str = Header(...,
             headers={"X-Error": "There goes error"},
         )
     else:
-        return {"msg": server_id}  # 可以自定義返回值，比如user或者其他的数据
+        return {"msg": server_id}  # 可以自定义返回值，比如user或者其他的数据
