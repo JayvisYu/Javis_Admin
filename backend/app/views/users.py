@@ -14,7 +14,7 @@ import config
 
 
 # 用户登录
-@router.post('/api/login/', summary='用户登录')
+@router.post('/api/login/', summary='用户登录', tags=['用户模块'])
 async def login(user_info: UserInfo):
     session = create_session()
     user = session.query(User).filter_by(username=user_info.username).first()
@@ -28,7 +28,7 @@ async def login(user_info: UserInfo):
         )
         user_id = user.id
         # redis存储用户的tokern信息
-        r.set(access_token, user_id, ex=300)
+        r.set(access_token, user_id, ex=config.REDIS_EXPIRE_TIME)
         session.close()
         return {'code': 200, 'data': {'token': access_token, 'token_type': 'bearer'}}
     else:
@@ -41,7 +41,7 @@ async def login(user_info: UserInfo):
 
 
 # token验证
-@router.get('/api/info', summary='获取用户信息')
+@router.get('/api/info', summary='获取用户信息', tags=['用户模块'])
 @login_require
 async def info(request: Request, token: Optional[str]):
     # 判断token是否过期
@@ -63,7 +63,7 @@ async def info(request: Request, token: Optional[str]):
 
 
 # 用户登出
-@router.post('/api/logout', summary='用户登出')
+@router.post('/api/logout', summary='用户登出', tags=['用户模块'])
 @login_require
 async def logout(request: Request):
     token = request.headers['authenticate']
@@ -77,6 +77,21 @@ async def logout(request: Request):
             return {'code': 402, 'data': {'msg': 'Logout fail'}}
     else:
         return {'code': 508, 'data': {'msg': 'Illegal token'}}
+
+
+# 获取用户列表
+@router.get('/api/get_search_user', summary='获取用户列表', tags=['用户模块'])
+@login_require
+async def get_search_user(request: Request, name: Optional[str]):
+    session = create_session()
+    user_query = session.query(User).filter_by(name=name).all()
+    user_list = []
+    for item in user_query:
+        temp_user = dict()
+        temp_user['name'] = item.name
+        user_list.append(item)
+    session.close()
+    return {'code': 200, 'data': {'items': user_list, 'msg': 'success'}}
 
 
 # 测试

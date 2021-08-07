@@ -6,10 +6,10 @@ from app.routers import router
 from starlette.middleware.sessions import SessionMiddleware
 
 # 设置token过期时间
-ACCESS_TOKEN_EXPIRE_MINUTES = 5  # 720
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 720
 # 设置Redis过期时间(s)
 REDIS_EXPIRE_TIME = ACCESS_TOKEN_EXPIRE_MINUTES * 60
-SESSION_COOKIE_AGE = 300
+SESSION_COOKIE_AGE = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
 def create_app():
@@ -24,6 +24,9 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    # 是否关闭所有接口文档
+    # app = FastAPI(docs_url=None, redoc_url=None)
+
     # app.add_middleware(SessionMiddleware, secret_key='Jarvis', max_age=SESSION_COOKIE_AGE)
 
     # app.mount('/static', StaticFiles(directory='static'), name='static')

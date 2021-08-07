@@ -17,6 +17,7 @@ def login_require(func):
             #     detail="用户未登录",
             #     headers={"WWW-Authenticate": "Bearer"},
             # )
-            return {'code': 401, 'data': {'msg': 'please login first'}}
+            return {'code': 514, 'data': {'msg': 'please login first'},
+                    'message': 'token is expired, please login first'}
 
     return inner

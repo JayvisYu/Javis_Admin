@@ -22,7 +22,7 @@ def drop_user_db():
 
 class User(Base):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(64), nullable=False)
     _password = Column(String(200), nullable=False)
     roles = Column(String(64), default=['editor'])
