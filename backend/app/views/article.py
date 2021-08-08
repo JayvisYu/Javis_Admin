@@ -5,11 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException, Depends
 from pydantic import BaseModel, constr
 from db.set_db import create_session
-from db.set_redis import r, pool
 from ..models.articles import Article
 from starlette.requests import Request
 from typing import Optional
-from datetime import timedelta
 import config
 
 
@@ -46,7 +44,7 @@ async def post_article_form(request: Request, data: FormData):
         session.add(add_data)
         session.commit()
         session.close()
-        return {'code': 200, 'data': {'msg': 'success'}}
+        return {'code': 200, 'data': {'msg': 'add data success'}}
     except Exception as e:
         print(e)
         session.close()
@@ -58,7 +56,6 @@ async def post_article_form(request: Request, data: FormData):
 @login_require
 async def get_article_list(request: Request, data: ListQuery):
     receive_form_data = jsonable_encoder(data)
-    print(receive_form_data)
     if receive_form_data:
         page = receive_form_data['page']
         limit = receive_form_data['limit']
@@ -79,6 +76,51 @@ async def get_article_list(request: Request, data: ListQuery):
             temp_dict['status'] = item.status
             article_list.append(temp_dict)
         session.close()
-        return {'code': 200, 'data': {'msg': 'success', 'total': total, 'article_list': article_list}}
+        return {'code': 200, 'data': {'msg': 'get article list success', 'total': total, 'article_list': article_list}}
     else:
         return {'code': 500, 'data': {'msg': 'get article list failed'}}
+
+
+# 获取当前文章
+@router.get('/api/get_detail_data', summary='获取文章', tags=['文章模块'])
+@login_require
+async def get_detail_data(request: Request, id: Optional[str]):
+    session = create_session()
+    article_data_query = session.query(Article).filter_by(id=int(id)).first()
+    session.close()
+    if article_data_query:
+        result_dict = dict()
+        result_dict['id'] = article_data_query.id
+        result_dict['author'] = article_data_query.author
+        result_dict['title'] = article_data_query.title
+        result_dict['content'] = article_data_query.content
+        result_dict['content_short'] = article_data_query.content_short
+        result_dict['timestamp'] = article_data_query.display_time
+        result_dict['importance'] = article_data_query.importance
+        result_dict['status'] = article_data_query.status
+        return {'code': 200, 'data': {'msg': 'get detail data success', 'result_dict': result_dict}}
+    else:
+        return {'code': 500, 'data': {'msg': 'get detail data fail'}}
+
+
+# 修改文章
+@router.post('/api/edit_article_data', summary='修改文章', tags=['文章模块'])
+@login_require
+async def edit_article_data(request: Request):
+    pass
+
+
+# 删除文章
+@router.get('/api/delete_article_data', summary='删除文章', tags=['文章模块'])
+@login_require
+async def delete_article_data(request: Request, id: Optional[str]):
+    # print(id, type(id))
+    session = create_session()
+    try:
+        delete_data = session.query(Article).filter_by(id=int(id)).delete()
+        session.commit()
+        session.close()
+        return {'code': 200, 'data': {'msg': 'delete article data success'}}
+    except Exception as e:
+        print(e)
+        return {'code': 500, 'data': {'msg': 'delete article data failed'}}
