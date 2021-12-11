@@ -1,38 +1,12 @@
 # -*- coding:utf-8 -*-
-from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from app.routers import router
-from starlette.middleware.sessions import SessionMiddleware
 
-# 设置token过期时间
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 720
+# 设置token过期时间 设置12小时
+ACCESS_TOKEN_EXPIRE_MINUTES = 720  # 720分钟
 # 设置Redis过期时间(s)
 REDIS_EXPIRE_TIME = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 SESSION_COOKIE_AGE = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
-
-def create_app():
-    app = FastAPI()
-
-    app.include_router(router)
-    # 添加中间件
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=['*'],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    # 是否关闭所有接口文档
-    # app = FastAPI(docs_url=None, redoc_url=None)
-
-    # app.add_middleware(SessionMiddleware, secret_key='Jarvis', max_age=SESSION_COOKIE_AGE)
-
-    # app.mount('/static', StaticFiles(directory='static'), name='static')
-    # app.mount('/components', StaticFiles(directory='components'), name='components')
-    app.mount('/models', StaticFiles(directory='models'), name='models')
-    # app.mount('/data', StaticFiles(directory='data'), name='data')
-    app.mount('/logs', StaticFiles(directory='logs'), name='logs')
-
-    return app
+# 加密key
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"  # 算法
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 访问令牌过期时间

@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # 初始化数据库
     init_article_db()
     # 删除数据库
-    # drop_article_db()
+    drop_article_db()
 
     # 添加用户
     # add_article_data = User(username='editor', password='123123', roles=['editor'],

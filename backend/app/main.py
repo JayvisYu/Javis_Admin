@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import uvicorn
-from config import create_app
+from routers import create_app
 
 app = create_app()
 

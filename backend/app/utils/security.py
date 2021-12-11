@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Union, Optional
 from fastapi import HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, constr
 from passlib.context import CryptContext
 from db.set_db import create_session
@@ -58,7 +58,6 @@ def jwt_get_user(db, username: str):
         user_dict['roles'] = [user_query.roles]
         user_dict['introduction'] = user_query.introduction
         user_dict['avator'] = user_query.avator
-        user_dict['name'] = user_query.name
         user_dict['user_join_time'] = user_query.user_join_time
         return user_dict
 

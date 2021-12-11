@@ -1,14 +1,16 @@
 # -*- coding:utf-8 -*-
-from ..routers import router
-from ..utils.decorators import login_require
+from fastapi import APIRouter
+from utils.decorators import login_require
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException, Depends
 from pydantic import BaseModel, constr
 from db.set_db import create_session
-from ..models.articles import Article
+from models.articles import Article
 from starlette.requests import Request
 from typing import Optional
 import config
+
+article_router = APIRouter()
 
 
 class FormData(BaseModel):
@@ -28,7 +30,7 @@ class ListQuery(BaseModel):
 
 
 # 提交文章
-@router.post('/api/post_article_form', summary='提交文章', tags=['文章模块'])
+@article_router.post('/post_article_form', summary='提交文章')
 @login_require
 async def post_article_form(request: Request, data: FormData):
     receive_form_data = jsonable_encoder(data)
@@ -52,7 +54,7 @@ async def post_article_form(request: Request, data: FormData):
 
 
 # 获取文章列表
-@router.post('/api/get_article_list', summary='获取文章列表', tags=['文章模块'])
+@article_router.post('/get_article_list', summary='获取文章列表')
 @login_require
 async def get_article_list(request: Request, data: ListQuery):
     receive_form_data = jsonable_encoder(data)
@@ -82,7 +84,7 @@ async def get_article_list(request: Request, data: ListQuery):
 
 
 # 获取当前文章
-@router.get('/api/get_detail_data', summary='获取文章', tags=['文章模块'])
+@article_router.get('/get_detail_data', summary='获取文章')
 @login_require
 async def get_detail_data(request: Request, id: Optional[str]):
     session = create_session()
@@ -104,14 +106,14 @@ async def get_detail_data(request: Request, id: Optional[str]):
 
 
 # 修改文章
-@router.post('/api/edit_article_data', summary='修改文章', tags=['文章模块'])
+@article_router.post('/edit_article_data', summary='修改文章')
 @login_require
 async def edit_article_data(request: Request):
     pass
 
 
 # 删除文章
-@router.get('/api/delete_article_data', summary='删除文章', tags=['文章模块'])
+@article_router.get('/delete_article_data', summary='删除文章')
 @login_require
 async def delete_article_data(request: Request, id: Optional[str]):
     # print(id, type(id))
