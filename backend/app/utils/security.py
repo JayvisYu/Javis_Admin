@@ -6,18 +6,12 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, constr
 from passlib.context import CryptContext
 from db.set_db import create_session
+from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 import jwt
 from fastapi import Header
 import time
 import hashlib
 import hmac
-
-# 导入配置文件
-import config
-
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 访问令牌过期时间
 
 
 class UserInfo(BaseModel):
@@ -36,13 +30,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 # 验证密码
-def verify_password(plain_password: str, hashed_password: str):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     """对密码进行校验"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 # 生成加密密码
-def get_password_hash(password):
+def get_password_hash(password: str) -> str:
+    """
+    加密明文
+    :param password: 明文密码
+    :return:
+    """
     return pwd_context.hash(password)
 
 
@@ -51,21 +50,23 @@ def jwt_get_user(db, username: str):
     session = create_session()
     user_query = session.query(db).filter_by(username=username).first()
     session.close()
-    user_dict = {}
+
     if user_query:
-        user_dict['username'] = user_query.username
-        user_dict['password'] = user_query.password
-        user_dict['roles'] = [user_query.roles]
-        user_dict['introduction'] = user_query.introduction
-        user_dict['avator'] = user_query.avator
-        user_dict['user_join_time'] = user_query.user_join_time
+        user_dict = {'username': user_query.username,
+                     'password': user_query.password,
+                     'email': user_query.email,
+                     'roles': user_query.roles,
+                     'introduction': user_query.introduction,
+                     'avatar': user_query.avatar
+                     }
+
         return user_dict
 
 
 # 验证用户
 def jwt_authenticate_user(db, username: str, password: str):
     user = jwt_get_user(db=db, username=username)
-    print(user)
+    print('user', user)
     if not user:
         return False
     if not verify_password(plain_password=password, hashed_password=user['password']):

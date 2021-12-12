@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from views import user_router, article_router
+from config import SESSION_COOKIE_AGE
 
 
 def create_app():
@@ -29,7 +30,7 @@ def create_app():
     # 是否关闭所有接口文档
     # app = FastAPI(docs_url=None, redoc_url=None)
 
-    # app.add_middleware(SessionMiddleware, secret_key='Jarvis', max_age=SESSION_COOKIE_AGE)
+    app.add_middleware(SessionMiddleware, secret_key='Jarvis', max_age=SESSION_COOKIE_AGE)
     app.mount('/static', StaticFiles(directory='static'), name='static')
     # app.mount('/components', StaticFiles(directory='components'), name='components')
     app.mount('/models', StaticFiles(directory='models'), name='models')
